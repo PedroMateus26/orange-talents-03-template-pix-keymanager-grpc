@@ -1,6 +1,6 @@
-applicationType: default
+applicationType: grpc
 defaultPackage: com.pedromateus.pix
 testFramework: junit
-sourceLanguage: kotlin
+sourceLanguage: java
 buildTool: gradle
-features: [annotation-api, app-name, data, data-jpa, gradle, h2, http-client, jdbc-hikari, junit, kotlin, kotlin-application, logback, netty-server, readme, shade, yaml]
+features: [annotation-api, app-name, gradle, grpc, java, java-application, junit, logback, readme, shade, yaml]

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.pedromateus.pix";
+option java_outer_classname = "Pix";
+option objc_class_prefix = "HLW";
+
+package com.pedromateus.pix;
+
+service RegistraChavePixService{
+  rpc registraChavePix(RegistraCavePixRequest) returns (RegitraChavePixResponse) {}
+}
+
+enum TipoDeChave{
+  UNKNOWN_TIPO_CHAVE=0;
+  CPF=1;
+  CELULAR=2;
+  EMAIL=3;
+  ALEATORIA=4;
+
+}
+
+enum TipoDeConta{
+  UNKNOWN_TIPO_CONTA=0;
+  CONTA_CORRENTE=1;
+  CONTA_POUPANCA=2;
+}
+
+message RegistraCavePixRequest {
+  string clienteId = 1;
+  TipoDeChave tipoDeChave=2;
+  string chave=3;
+  TipoDeConta tipoDeConta=4;
+
+}
+
+message RegitraChavePixResponse{
+  string clienteID = 1;
+  string chavePix=2;
+}
