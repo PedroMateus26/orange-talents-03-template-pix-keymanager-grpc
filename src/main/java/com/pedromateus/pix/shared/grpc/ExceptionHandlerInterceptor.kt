@@ -1,32 +1,43 @@
 package com.pedromateus.pix.shared.grpc
 
-import com.pedromateus.pix.chave_pix.nova_chave.NovaChaveControlador
-import com.pedromateus.pix.excecoes.GrpcException
+import com.pedromateus.pix.excecoes.ApiErrorException
+import io.grpc.BindableService
+import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.micronaut.aop.InterceptorBean
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import org.slf4j.LoggerFactory
-import java.lang.Exception
+import java.lang.IllegalStateException
 import javax.inject.Singleton
-import javax.validation.ConstraintViolationException
 
 @Singleton
 @InterceptorBean(ErrorHandler::class)
-class ExceptionHandlerInterceptor : MethodInterceptor<NovaChaveControlador,Any>{
+class ExceptionHandlerInterceptor : MethodInterceptor<BindableService, Any?> {
 
-    private val logger=LoggerFactory.getLogger(this.javaClass)
+    private val logger = LoggerFactory.getLogger(this.javaClass)
 
-    override fun intercept(context: MethodInvocationContext<NovaChaveControlador, Any>?): Any? {
+    override fun intercept(context: MethodInvocationContext<BindableService, Any?>): Any? {
 
-        //antes
-        logger.info("Interceptando método: ${context?.targetMethod}")
 
         try {
-            context?.proceed() //processa o método interceptado
+            context.proceed() //processa o método interceptado
         } catch (e: Exception) {
-            val erro=GrpcException.valueOf(e.javaClass.simpleName).error(e)
-            val reponseError= context?.parameterValues?.get(1) as StreamObserver<*>
+            logger.error(e.message)
+            e.printStackTrace()
+
+            val erro = when (e) {
+                is ApiErrorException -> e.statusGrpc
+                    .withDescription(e.message)
+                    .asRuntimeException()
+                is IllegalArgumentException->Status.INVALID_ARGUMENT
+                    .withDescription(e.localizedMessage)
+                    .asRuntimeException()
+                else -> Status.UNKNOWN
+                    .withDescription(e.message)
+                    .asRuntimeException()
+            }
+            val reponseError = context.parameterValues[1] as StreamObserver<*>
             reponseError.onError(erro)
 
         }

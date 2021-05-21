@@ -14,11 +14,11 @@ import javax.transaction.Transactional
 import javax.validation.Validator
 
 @Singleton
-//@ErrorHandler
+@ErrorHandler
 open class NovaChaveControlador(
-    @Inject val repository: ChavePixRepository,
-    @Inject val contaAssocadaInterceptor: ContaAssociadaInterceptor,
-    @Inject val validator: Validator
+    @Inject private val repository: ChavePixRepository,
+    @Inject private val contaAssocadaInterceptor: ContaAssociadaInterceptor,
+    @Inject private val validator: Validator
 ) : RegistraChavePixServiceGrpc.RegistraChavePixServiceImplBase() {
 
     @Transactional
@@ -27,12 +27,12 @@ open class NovaChaveControlador(
         responseObserver: StreamObserver<RegitraChavePixResponse>
     ) {
 
-        val pixDto = request.toNovaChavePixRequest(validator)
+        request.toNovaChavePixRequest(validator)
             .run {
                 val contaAssociada =
                     contaAssocadaInterceptor.buscaConta(
                         this.clienteId!!,
-                        TipoDeConta.valueOf(this.tipoDeConta!!.toString())
+                        TipoDeConta.valueOf(this.tipoDeConta.toString())
                     ).toContaAssociada()
                 val elem = repository.save(this.toChavePix(contaAssociada))
                 if (this != null) println(repository.findById(elem.id))

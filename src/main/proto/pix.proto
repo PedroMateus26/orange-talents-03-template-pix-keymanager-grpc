@@ -9,6 +9,11 @@ package com.pedromateus.pix;
 
 service RegistraChavePixService{
   rpc registraChavePix(RegistraCavePixRequest) returns (RegitraChavePixResponse) {}
+
+}
+
+service RemoveChavePixService{
+  rpc removendoChavePix(UsuarioPixRemoveReques) returns (UsuarioPixRemoveResponse){}
 }
 
 enum TipoDeChave{
@@ -37,4 +42,12 @@ message RegistraCavePixRequest {
 message RegitraChavePixResponse{
   string clienteID = 1;
   string chavePix=2;
+}
+
+message UsuarioPixRemoveReques{
+  string pixId=1;
+  string clienteId=2;
+}
+message UsuarioPixRemoveResponse{
+  string message =1;
 }
