@@ -19,7 +19,7 @@ class RemovendoChaveControlador(private val removeService: RemoveChavePixService
         request: UsuarioPixRemoveRequest,
         responseObserver: StreamObserver<UsuarioPixRemoveResponse>
     ) {
-        var response = RemoveChvePixResponse("")
+        var response: RemoveChvePixResponse
         request.convertToRemoveChavePixRequest().run {
             response = removeService.removeChavePix(this)
         }
