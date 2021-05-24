@@ -9,7 +9,7 @@ import javax.persistence.*
 @Entity
 data class ChavePix(
     @Column(nullable = false)
-    var clieteId: UUID?,
+    var clienteId: UUID?,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

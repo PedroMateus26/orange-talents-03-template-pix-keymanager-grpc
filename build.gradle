@@ -74,10 +74,10 @@ tasks {
             jvmTarget = "11"
         }
     }
-
-
 }
-
+kapt {
+    generateStubs = true
+}
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:3.14.0" }
     plugins {

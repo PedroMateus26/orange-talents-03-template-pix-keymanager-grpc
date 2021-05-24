@@ -27,7 +27,7 @@ data class NovaChavePixRequest(
 
     fun toChavePix(contaAssociada :ContaAssociada): ChavePix {
         return ChavePix(
-            clieteId = UUID.fromString(clienteId),
+            clienteId = UUID.fromString(clienteId),
             tipoDeChave=tipoDeChave,
             chave=chave,
             tipoDeConta=tipoDeConta,

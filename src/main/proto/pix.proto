@@ -13,7 +13,7 @@ service RegistraChavePixService{
 }
 
 service RemoveChavePixService{
-  rpc removendoChavePix(UsuarioPixRemoveReques) returns (UsuarioPixRemoveResponse){}
+  rpc removendoChavePix(UsuarioPixRemoveRequest) returns (UsuarioPixRemoveResponse){}
 }
 
 enum TipoDeChave{
@@ -44,9 +44,9 @@ message RegitraChavePixResponse{
   string chavePix=2;
 }
 
-message UsuarioPixRemoveReques{
-  string pixId=1;
-  string clienteId=2;
+message UsuarioPixRemoveRequest{
+  string clienteID=1;
+  string chavePix=2;
 }
 message UsuarioPixRemoveResponse{
   string message =1;

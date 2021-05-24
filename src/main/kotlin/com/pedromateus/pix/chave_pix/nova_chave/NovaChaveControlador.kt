@@ -45,7 +45,7 @@ class NovaChaveControlador(
                     throw ApiErrorException("Essa chave já existe na base da dados. Delete-a para cadastrar outra.",HttpStatus.BAD_REQUEST,Status.ALREADY_EXISTS)
                 }
                 val chavePix=repository.save(this.toChavePix(contaAssociada.toContaAssociada()))
-               novaChaveGerada=NovaChavePixResponse (chavePix.clieteId,chavePix.chave)
+               novaChaveGerada=NovaChavePixResponse (chavePix.clienteId,chavePix.id.toString())
             }
 
 
