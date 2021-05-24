@@ -8,8 +8,8 @@ import io.micronaut.http.client.annotation.Client
 
 
 @Client("http://localhost:9091/api/v1/clientes")
-interface ContaAssociadaInterceptor {
+interface ContaAssociadaClient {
 
     @Get("/{clienteId}/contas")
-    fun buscaConta(@PathVariable clienteId: String, @QueryValue tipo: TipoDeConta):ContaAssociadaResponse
+    fun buscaConta(@PathVariable clienteId: String, @QueryValue tipo: TipoDeConta):ContaAssociadaResponse?
 }

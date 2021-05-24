@@ -40,6 +40,9 @@ dependencies {
     implementation("io.micronaut:micronaut-validation")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.micronaut:micronaut-http-client")
+
+
+    testImplementation("org.mockito:mockito-core")
 }
 
 
@@ -51,8 +54,6 @@ java {
     targetCompatibility = JavaVersion.toVersion("11")
 }
 
-
-
 sourceSets {
     main {
         java {
@@ -60,6 +61,21 @@ sourceSets {
             srcDirs("build/generated/source/proto/main/java")
         }
     }
+}
+
+tasks {
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
+
+
 }
 
 protobuf {
@@ -71,3 +87,5 @@ protobuf {
         all()*.plugins { grpc {} }
     }
 }
+
+
