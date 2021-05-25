@@ -29,8 +29,8 @@ class RemoveChavePixService(
                     Status.NOT_FOUND
                 )
             }.run {
-                val deletePixKeyRequest = DeletePixKeyRequest(tipoDeChave?.name, contaAssociada?.ispb)
-                val response = bcbClient.deltaChavePixDoBacen(deletePixKeyRequest,tipoDeChave?.name)
+                val deletePixKeyRequest = DeletePixKeyRequest(chave, contaAssociada?.ispb)
+                val response = bcbClient.deltaChavePixDoBacen(deletePixKeyRequest,chave!!)
                 println(response.status)
                 when (response.status) {
                     HttpStatus.OK -> repository.delete(this)

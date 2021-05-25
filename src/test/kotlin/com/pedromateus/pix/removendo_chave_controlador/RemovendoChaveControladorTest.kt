@@ -6,6 +6,7 @@ import com.pedromateus.pix.chave_pix.ChavePix
 import com.pedromateus.pix.chave_pix.ChavePixRepository
 import com.pedromateus.pix.chave_pix.TipoDeChaveImpl
 import com.pedromateus.pix.chave_pix.TipoDeContaImpl
+import com.pedromateus.pix.chave_pix.bcb.BcbClient
 import com.pedromateus.pix.chave_pix.nova_chave.conta_associada.ContaAssociadaClient
 import com.pedromateus.pix.chave_pix.nova_chave.conta_associada.ContaAssociadaResponse
 import com.pedromateus.pix.chave_pix.nova_chave.conta_associada.InstituicaoResponse
@@ -93,8 +94,14 @@ class RemovendoChaveControladorTest(
     }
 
     @MockBean(ContaAssociadaClient::class)
-    fun itauClientes(): ContaAssociadaClient? {
+    fun itauClient(): ContaAssociadaClient? {
         return Mockito.mock(ContaAssociadaClient::class.java)
+
+    }
+
+    @MockBean(BcbClient::class)
+    fun bcbClient(): BcbClient? {
+        return Mockito.mock(BcbClient::class.java)
 
     }
 

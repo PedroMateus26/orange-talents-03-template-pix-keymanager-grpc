@@ -38,7 +38,7 @@ class NovaChaveControlador(
         responseObserver: StreamObserver<RegitraChavePixResponse>,
     ) {
 
-        var novaChaveGerada: NovaChavePixResponse?=null
+        var novaChaveGerada: NovaChavePixResponse?
         request.toNovaChavePixRequest(validator)
             .run {
                 val contaAssociada =
@@ -59,12 +59,12 @@ class NovaChaveControlador(
                 }
                 val chavePix =toChavePix(contaAssociada.toContaAssociada())
 
-                val titular = TitularRequest(
-                    TipoDoTitular.NATURAL_PERSON,
-                    chavePix.contaAssociada?.nomeDoTitular,
-                    chavePix.contaAssociada?.cpfTitular
-                )
                 with(chavePix) {
+                    val titular = TitularRequest(
+                        TipoDoTitular.NATURAL_PERSON,
+                        chavePix.contaAssociada?.nomeDoTitular,
+                        chavePix.contaAssociada?.cpfTitular
+                    )
                     val contaBancoRequest = ContaBancoRequest(
                         this.contaAssociada?.ispb,
                         this.contaAssociada?.agencia,
@@ -74,14 +74,16 @@ class NovaChaveControlador(
                             else -> TipoDeContaRequest.SVGS
                         }
                     )
+
                     val cretePixRequest =
-                        CreatePixRequest(tipoDeChave?.name, tipoDeChave, contaBancoRequest, titular)
+                        CreatePixRequest(tipoDeChave?.name, chave, contaBancoRequest, titular)
                     val response=bcbClient.criaChavePixNoBancoCentral(cretePixRequest)
-                    when(response.status){
-                        HttpStatus.CREATED-> repository.save(this).run { novaChaveGerada=NovaChavePixResponse(id.toString(),clienteId.toString())}
-                        HttpStatus.UNPROCESSABLE_ENTITY->throw ApiErrorException("Chave pix já registrada",HttpStatus.UNPROCESSABLE_ENTITY,Status.UNKNOWN )
-                        else->throw ApiErrorException("Erro desconhecido",HttpStatus.I_AM_A_TEAPOT,Status.UNKNOWN )
-                    }
+
+//                    when(response.status){
+//                        HttpStatus.CREATED-> repository.save(this).run { novaChaveGerada=NovaChavePixResponse(id.toString(),clienteId.toString())}
+//                        HttpStatus.UNPROCESSABLE_ENTITY->throw ApiErrorException("Chave pix já registrada",HttpStatus.UNPROCESSABLE_ENTITY,Status.UNKNOWN )
+//                        else->throw ApiErrorException("Erro desconhecido",HttpStatus.I_AM_A_TEAPOT,Status.UNKNOWN )
+//                    }
 //                    when(val response=bcbClient.criaChavePixNoBancoCentral(cretePixRequest)){
 //                        is Success->novaChaveGerada = NovaChavePixResponse(chavePix.clienteId, chavePix.id.toString())
 //                        else->throw ApiErrorException("Problema com a requsição",response!!.status,Status.UNKNOWN)
@@ -92,13 +94,13 @@ class NovaChaveControlador(
             }
 
         //Retorno do código
-        responseObserver.onNext(
-            RegitraChavePixResponse
-                .newBuilder()
-                .setClienteID(novaChaveGerada?.clienteId)
-                .setChavePix(novaChaveGerada?.id)
-                .build()
-        )
+//        responseObserver.onNext(
+//            RegitraChavePixResponse
+//                .newBuilder()
+//                .setClienteID(novaChaveGerada?.clienteId)
+//                .setChavePix(novaChaveGerada?.id)
+//                .build()
+//        )
         responseObserver.onCompleted()
 
     }
