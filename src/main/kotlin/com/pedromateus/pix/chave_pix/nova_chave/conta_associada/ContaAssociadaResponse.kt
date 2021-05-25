@@ -15,7 +15,8 @@ data class ContaAssociadaResponse(
             nomeDoTitular = this.titular?.nome,
             cpfTitular = this.titular?.cpf,
             agencia = this?.agencia,
-            numeroDaConta = this?.numero
+            numeroDaConta = this?.numero,
+            ispb=this.instituicao?.ispb
         )
     }
 
