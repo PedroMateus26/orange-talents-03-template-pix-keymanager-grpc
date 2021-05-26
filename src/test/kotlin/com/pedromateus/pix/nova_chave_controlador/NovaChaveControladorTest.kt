@@ -39,12 +39,13 @@ import javax.validation.Validator
 @MicronautTest(transactional = false)
 class NovaChaveControladorTest(
     val repository: ChavePixRepository,
-    val grpcClient: RegistraChavePixServiceGrpc.RegistraChavePixServiceBlockingStub,
-    val validator: Validator,
-    val clieteItau: ContaAssociadaClient,
-    val bcbClient: BcbClient
+    val grpcClient: RegistraChavePixServiceGrpc.RegistraChavePixServiceBlockingStub
 ) {
+    @Inject
+    lateinit var clieteItau: ContaAssociadaClient
 
+    @Inject
+    lateinit var bcbClient: BcbClient
 
     companion object {
         val CLIENTE_ID = UUID.randomUUID()
@@ -60,76 +61,30 @@ class NovaChaveControladorTest(
 
 //        criar cenário
 
-//        val request = RegistraCavePixRequest.newBuilder()
-//            .setClienteId(CLIENTE_ID.toString())
-//            .setTipoDeChave(TipoDeChave.EMAIL)
-//            .setChave("rafael@email.com")
-//            .setTipoDeConta(TipoDeConta.CONTA_CORRENTE)
-//            .build()
-//
-//        val novaChavePixKeyRequest = request.toNovaChavePixRequest(validator)
-//
-//        val contaAssociadaResponse = dadosDaContaResponse()
-//
-//        val chavePixEntidade = novaChavePixKeyRequest.toChavePix(contaAssociadaResponse.toContaAssociada())
-//
-//        `when`(clieteItau.buscaConta(request.clienteId, request.tipoDeConta))
-//            .thenReturn(contaAssociadaResponse)
-//
-//        val createPixRequest = with(chavePixEntidade) {
-//            val titular = TitularRequest(
-//                TipoDoTitular.NATURAL_PERSON,
-//                chavePixEntidade.contaAssociada?.nomeDoTitular,
-//                chavePixEntidade.contaAssociada?.cpfTitular
-//            )
-//            val contaBancoRequest = ContaBancoRequest(
-//                this.contaAssociada?.ispb,
-//                this.contaAssociada?.agencia,
-//                this.contaAssociada?.numeroDaConta,
-//                when (tipoDeConta) {
-//                    TipoDeContaImpl.CONTA_CORRENTE -> TipoDeContaRequest.CACC
-//                    else -> TipoDeContaRequest.SVGS
-//                }
-//            )
-//
-//            CreatePixRequest(tipoDeChave?.name, chave, contaBancoRequest, titular)
-//        }
-
         `when`(clieteItau.buscaConta(CLIENTE_ID.toString(), TipoDeConta.CONTA_CORRENTE))
-          .thenReturn(dadosDaContaResponse())
+            .thenReturn(dadosDaContaResponse())
 
         `when`(bcbClient.criaChavePixNoBancoCentral(createPixRequest()))
-            .thenReturn(HttpResponse.created(CreatePixResponse(
-                keyType = TipoDeChaveImpl.EMAIL.name,
-                key = "rafael@email.com",
-                bankAccount = contaBancoRequest(),
-                owner = titularRequest(),
-                createdAt = LocalDateTime.now().toString()
-            )))
-
-        val retorno2=clieteItau.buscaConta(CLIENTE_ID.toString(), TipoDeConta.CONTA_CORRENTE)
-        val retorno: HttpResponse<CreatePixResponse> =bcbClient.criaChavePixNoBancoCentral(createPixRequest())
-
-        println(retorno.body())
-        println(createPixResponse())
-        println("======================")
-        println(retorno2)
-        println("======================")
-        println(dadosDaContaResponse())
+            .thenReturn(HttpResponse.created(createPixResponse()))
 
 
         //executar a ação
-//        val response = grpcClient.registraChavePix(
-//            //request
-//        )
+        val response = grpcClient.registraChavePix(
+            RegistraCavePixRequest.newBuilder()
+            .setClienteId(CLIENTE_ID.toString())
+            .setTipoDeChave(TipoDeChave.EMAIL)
+            .setChave("rafael@email.com")
+            .setTipoDeConta(TipoDeConta.CONTA_CORRENTE)
+            .build()
+        )
 
 
         //relizar as verificações
 
-//        with(response) {
-//            assertEquals(CLIENTE_ID.toString(), clienteID)
-//            assertNotNull(chavePix)
-//        }
+        with(response) {
+            assertEquals(CLIENTE_ID.toString(), clienteID)
+            assertNotNull(chavePix)
+        }
     }
 
     @Test
@@ -186,7 +141,91 @@ class NovaChaveControladorTest(
 
         //fazer comparações
         with(thrown) {
-            assertEquals(Status.NOT_FOUND.code, status.code)
+            assertEquals(Status.FAILED_PRECONDITION.code, status.code)
+            assertEquals(
+                "Não foi possível completar o serviço, algum serviço externo está fora do ar!",
+                status.description
+            )
+        }
+    }
+
+    @Test
+    fun `não pode cadastrar chave no banco central quando houver um erro interno`() {
+        //criar cenãrio
+        `when`(clieteItau.buscaConta(CLIENTE_ID.toString(),TipoDeConta.CONTA_CORRENTE))
+            .thenReturn(dadosDaContaResponse())
+        //Realizar a ação
+        val thrown = assertThrows<StatusRuntimeException> {
+            grpcClient.registraChavePix(
+                RegistraCavePixRequest.newBuilder()
+                    .setClienteId(CLIENTE_ID.toString())
+                    .setTipoDeChave(TipoDeChave.CPF)
+                    .setChave("02467781054")
+                    .setTipoDeConta(TipoDeConta.CONTA_CORRENTE)
+                    .build()
+            )
+        }
+
+        //fazer comparações
+        with(thrown) {
+            assertEquals(Status.FAILED_PRECONDITION.code, status.code)
+            assertEquals(
+                "Não foi possível completar o serviço, algum serviço externo está fora do ar!",
+                status.description
+            )
+        }
+    }
+
+    @Test
+    fun `não pode cadastrar chave no banco central quando houver um erro interno relacionado a requisição`() {
+        //criar cenãrio
+        `when`(clieteItau.buscaConta(CLIENTE_ID.toString(),TipoDeConta.CONTA_CORRENTE))
+            .thenReturn(dadosDaContaResponse())
+        //Realizar a ação
+        val thrown = assertThrows<StatusRuntimeException> {
+            grpcClient.registraChavePix(
+                RegistraCavePixRequest.newBuilder()
+                    .setClienteId(CLIENTE_ID.toString())
+                    .setTipoDeChave(TipoDeChave.CPF)
+                    .setChave("02467781054")
+                    .setTipoDeConta(TipoDeConta.CONTA_CORRENTE)
+                    .build()
+            )
+        }
+
+        //fazer comparações
+        with(thrown) {
+            assertEquals(Status.FAILED_PRECONDITION.code, status.code)
+            assertEquals(
+                "Não foi possível completar o serviço, algum serviço externo está fora do ar!",
+                status.description
+            )
+        }
+    }
+
+    @Test
+    fun `não deve registrar chaves quando erros desconhecidos ocorrerem no sistema`() {
+        //criar cenãrio
+        `when`(clieteItau.buscaConta(CLIENTE_ID.toString(), TipoDeConta.CONTA_CORRENTE))
+            .thenReturn(dadosDaContaResponse())
+
+        `when`(bcbClient.criaChavePixNoBancoCentral(createPixRequest()))
+            .thenReturn(HttpResponse.created(createPixResponse()))
+        //Realizar a ação
+        val thrown = assertThrows<StatusRuntimeException> {
+            grpcClient.registraChavePix(
+                RegistraCavePixRequest.newBuilder()
+                    .setClienteId(CLIENTE_ID.toString())
+                    .setTipoDeChave(TipoDeChave.CPF)
+                    .setChave("02467781054")
+                    .setTipoDeConta(TipoDeConta.CONTA_CORRENTE)
+                    .build()
+            )
+        }
+
+        //fazer comparações
+        with(thrown) {
+            assertEquals(Status.FAILED_PRECONDITION.code, status.code)
             assertEquals(
                 "Não foi possível completar o serviço, algum serviço externo está fora do ar!",
                 status.description
@@ -211,8 +250,38 @@ class NovaChaveControladorTest(
         }
     }
 
+    @Test
+    fun `não deve registrar chaves quando erro de conexão acontecer`() {
+        //criar cenãrio
+        `when`(clieteItau.buscaConta(CLIENTE_ID.toString(), TipoDeConta.CONTA_CORRENTE))
+            .thenReturn(dadosDaContaResponse())
+
+        `when`(bcbClient.criaChavePixNoBancoCentral(createPixRequest()))
+            .thenReturn(HttpResponse.created(createPixResponse()))
+        //Realizar a ação
+        val thrown = assertThrows<StatusRuntimeException> {
+            grpcClient.registraChavePix(
+                RegistraCavePixRequest.newBuilder()
+                    .setClienteId(CLIENTE_ID.toString())
+                    .setTipoDeChave(TipoDeChave.CPF)
+                    .setChave("02467781054")
+                    .setTipoDeConta(TipoDeConta.CONTA_CORRENTE)
+                    .build()
+            )
+        }
+
+        //fazer comparações
+        with(thrown) {
+            assertEquals(Status.FAILED_PRECONDITION.code, status.code)
+            assertEquals(
+                "Não foi possível completar o serviço, algum serviço externo está fora do ar!",
+                status.description
+            )
+        }
+    }
+
     @MockBean(ContaAssociadaClient::class)
-    fun itauClientes(): ContaAssociadaClient {
+    fun itauClientes(): ContaAssociadaClient? {
         return Mockito.mock(ContaAssociadaClient::class.java)
 
     }

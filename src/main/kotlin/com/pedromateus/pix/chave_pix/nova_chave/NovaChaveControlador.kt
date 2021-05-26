@@ -47,8 +47,8 @@ class NovaChaveControlador(
                         TipoDeConta.valueOf(tipoDeConta.toString())
                     ) ?: throw ApiErrorException(
                         "Não foi possível completar o serviço, algum serviço externo está fora do ar!",
-                        HttpStatus.NOT_FOUND,
-                        Status.NOT_FOUND
+                        HttpStatus.BAD_REQUEST,
+                        Status.FAILED_PRECONDITION
                     )
                 if (repository.existsByChave(request.chave)) {
                     throw ApiErrorException(
@@ -62,13 +62,13 @@ class NovaChaveControlador(
                 with(chavePix) {
                     val titular = TitularRequest(
                         TipoDoTitular.NATURAL_PERSON,
-                        chavePix.contaAssociada?.nomeDoTitular,
-                        chavePix.contaAssociada?.cpfTitular
+                        chavePix.contaAssociada!!.nomeDoTitular!!,
+                        chavePix.contaAssociada!!.cpfTitular!!
                     )
                     val contaBancoRequest = ContaBancoRequest(
-                        this.contaAssociada?.ispb,
-                        this.contaAssociada?.agencia,
-                        this.contaAssociada?.numeroDaConta,
+                        this.contaAssociada!!.ispb!!,
+                        this.contaAssociada!!.agencia!!,
+                        this.contaAssociada!!.numeroDaConta!!,
                         when (tipoDeConta) {
                             TipoDeContaImpl.CONTA_CORRENTE -> TipoDeContaRequest.CACC
                             else -> TipoDeContaRequest.SVGS
@@ -76,17 +76,21 @@ class NovaChaveControlador(
                     )
 
                     val cretePixRequest =
-                        CreatePixRequest(tipoDeChave?.name, chave, contaBancoRequest, titular)
-                    val response=bcbClient.criaChavePixNoBancoCentral(cretePixRequest)
+                        CreatePixRequest(tipoDeChave!!.name, chave!!, contaBancoRequest, titular)
+                    val response=bcbClient.criaChavePixNoBancoCentral(cretePixRequest)?: throw ApiErrorException(
+                        "Não foi possível completar o serviço, algum serviço externo está fora do ar!",
+                        HttpStatus.BAD_REQUEST,
+                        Status.FAILED_PRECONDITION
+                    )
 
-//                    when(response.status){
-//                        HttpStatus.CREATED-> repository.save(this).run { novaChaveGerada=NovaChavePixResponse(id.toString(),clienteId.toString())}
-//                        HttpStatus.UNPROCESSABLE_ENTITY->throw ApiErrorException("Chave pix já registrada",HttpStatus.UNPROCESSABLE_ENTITY,Status.UNKNOWN )
-//                        else->throw ApiErrorException("Erro desconhecido",HttpStatus.I_AM_A_TEAPOT,Status.UNKNOWN )
-//                    }
+                    when(response.status){
+                        HttpStatus.CREATED-> repository.save(this).run { novaChaveGerada=NovaChavePixResponse(id.toString(),clienteId.toString())}
+                        HttpStatus.UNPROCESSABLE_ENTITY->throw ApiErrorException("Chave pix já registrada",HttpStatus.UNPROCESSABLE_ENTITY,Status.UNKNOWN )
+                        else->throw ApiErrorException("Serviço do banco central está temporiaramente indisponível.",HttpStatus.I_AM_A_TEAPOT,Status.FAILED_PRECONDITION )
+                    }
 //                    when(val response=bcbClient.criaChavePixNoBancoCentral(cretePixRequest)){
-//                        is Success->novaChaveGerada = NovaChavePixResponse(chavePix.clienteId, chavePix.id.toString())
-//                        else->throw ApiErrorException("Problema com a requsição",response!!.status,Status.UNKNOWN)
+//                        is Success->novaChaveGerada = NovaChavePixResponse(chavePix.clienteId.toString(), chavePix.id.toString())
+//                        else->throw ApiErrorException("Problema com a requsição",response.status,Status.UNKNOWN)
 //                    }
 
                 }
@@ -94,13 +98,13 @@ class NovaChaveControlador(
             }
 
         //Retorno do código
-//        responseObserver.onNext(
-//            RegitraChavePixResponse
-//                .newBuilder()
-//                .setClienteID(novaChaveGerada?.clienteId)
-//                .setChavePix(novaChaveGerada?.id)
-//                .build()
-//        )
+        responseObserver.onNext(
+            RegitraChavePixResponse
+                .newBuilder()
+                .setClienteID(novaChaveGerada?.clienteId)
+                .setChavePix(novaChaveGerada?.id)
+                .build()
+        )
         responseObserver.onCompleted()
 
     }

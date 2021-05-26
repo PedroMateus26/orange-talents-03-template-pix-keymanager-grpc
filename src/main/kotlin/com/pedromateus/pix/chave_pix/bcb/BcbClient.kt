@@ -11,7 +11,7 @@ interface BcbClient {
     @Post("/api/v1/pix/keys")
     @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_XML)
-    fun criaChavePixNoBancoCentral(@Body createPixRequest: CreatePixRequest):HttpResponse<CreatePixResponse>
+    fun criaChavePixNoBancoCentral(@Body createPixRequest: CreatePixRequest):HttpResponse<CreatePixResponse>?
 
     @Produces(MediaType.APPLICATION_XML)
     @Consumes(MediaType.APPLICATION_XML)

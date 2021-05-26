@@ -14,8 +14,8 @@ import javax.validation.Valid
 @Singleton
 @Validated
 class RemoveChavePixService(
-    val repository: ChavePixRepository,
-    val bcbClient: BcbClient
+    private val repository: ChavePixRepository,
+    private val bcbClient: BcbClient
 ) {
 
     fun removeChavePix(@Valid removeChvaPixRequest: RemoveChavePixRequest): RemoveChvePixResponse {
@@ -29,9 +29,8 @@ class RemoveChavePixService(
                     Status.NOT_FOUND
                 )
             }.run {
-                val deletePixKeyRequest = DeletePixKeyRequest(chave, contaAssociada?.ispb)
+                val deletePixKeyRequest = DeletePixKeyRequest(chave!!, contaAssociada!!.ispb!!)
                 val response = bcbClient.deltaChavePixDoBacen(deletePixKeyRequest,chave!!)
-                println(response.status)
                 when (response.status) {
                     HttpStatus.OK -> repository.delete(this)
                     HttpStatus.valueOf(403) -> throw ApiErrorException(
