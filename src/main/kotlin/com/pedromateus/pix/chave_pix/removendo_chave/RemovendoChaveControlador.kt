@@ -22,7 +22,9 @@ class RemovendoChaveControlador(private val removeService: RemoveChavePixService
         var response: RemoveChvePixResponse
         request.convertToRemoveChavePixRequest().run {
             response = removeService.removeChavePix(this)
+
         }
+
         responseObserver.onNext(
             UsuarioPixRemoveResponse.newBuilder()
                 .setMessage(response.mensagem)

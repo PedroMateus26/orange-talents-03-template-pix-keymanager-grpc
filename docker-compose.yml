@@ -8,3 +8,11 @@ services:
         image: "public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp"
         ports: 
             - 9091:9091
+    chave-pix-db:
+        image: postgres:latest
+        ports:
+            - 5434:5432
+        environment:
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+            POSTGRES_DB: chavepix

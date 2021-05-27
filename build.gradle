@@ -35,14 +35,13 @@ dependencies {
     implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator:3.0.0")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("javax.annotation:javax.annotation-api")
+    implementation("io.micronaut:micronaut-validation")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut.xml:micronaut-jackson-xml")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.h2database:h2")
-    implementation("io.micronaut:micronaut-validation")
+    runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("io.micronaut:micronaut-http-client")
-
-    implementation("io.micronaut.xml:micronaut-jackson-xml")
-
     testImplementation("org.mockito:mockito-core")
 }
 
