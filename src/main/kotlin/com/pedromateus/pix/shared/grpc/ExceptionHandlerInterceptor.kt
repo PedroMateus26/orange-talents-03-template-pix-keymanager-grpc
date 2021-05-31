@@ -31,7 +31,7 @@ class ExceptionHandlerInterceptor : MethodInterceptor<BindableService, Any?> {
                     .withDescription(e.message)
                     .asRuntimeException()
                 is IllegalArgumentException->Status.INVALID_ARGUMENT
-                    .withDescription(e.localizedMessage)
+                    .withDescription("Dados de entrada inválidos!")
                     .asRuntimeException()
                 else -> Status.UNKNOWN
                     .withDescription(e.message)

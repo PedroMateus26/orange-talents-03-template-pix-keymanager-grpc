@@ -18,8 +18,8 @@ sealed class FiltroParaBuscarChavePix {
 
     @Introspected
     data class PorPixId(
-        @field:NotBlank @field:ValidUUID val clienteId: String,
-        @field:NotBlank @field:ValidUUID val pixId: String,
+        @field:NotBlank(message = "Id do cliente não pode estar em branco") @field:ValidUUID val clienteId: String,
+        @field:NotBlank(message = "Id da chave não pode estar em branco") @field:ValidUUID val pixId: String,
 
         ) : FiltroParaBuscarChavePix() {
 
